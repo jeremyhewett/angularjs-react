@@ -207,16 +207,16 @@ var _initialiseProps = function _initialiseProps() {
   this.link = function (instance) {
     return function ($scope, $elem, $attrs) {
       var elem = $elem[0];
-      var shadowParent = void 0,
-          innerText = void 0;
+      var shadowParent = void 0;
       if (instance.hasChildren) {
+        var content = void 0;
         try {
-          var content = _this.$compile(instance.innerHtml)($scope);
-          shadowParent = _angular2.default.element(elem.cloneNode(false));
-          shadowParent.append(content);
+          content = _this.$compile(instance.innerHtml)($scope);
         } catch (e) {
-          innerText = instance.innerHtml;
+          content = _angular2.default.element(instance.innerHtml);
         }
+        shadowParent = _angular2.default.element(elem.cloneNode(false));
+        shadowParent.append(content);
       }
 
       var props = {};
@@ -236,7 +236,7 @@ var _initialiseProps = function _initialiseProps() {
         if ([].slice.call(element[0].attributes).filter(function (a) {
           return a.name === 're-react';
         }).length) {
-          var result = element.children().splice(0).map(function (e) {
+          var result = element.contents().splice(0).map(function (e) {
             var el = _angular2.default.element(e);
             var inputAttrs = [].slice.call(e.attributes).filter(function (a) {
               return a.name.match(INPUT_ATTR_PREFIX_REGEXP);
@@ -262,7 +262,7 @@ var _initialiseProps = function _initialiseProps() {
         if (!renderPending) {
           _this.$timeout(function () {
             var component = _this.component(props);
-            var children = instance.hasChildren ? shadowParent ? getChildren(shadowParent) : innerText : undefined;
+            var children = instance.hasChildren ? getChildren(shadowParent) : undefined;
             _reactDom2.default.render(_react2.default.createElement(component.type, _angular2.default.extend({}, _extends({}, component.props), { ref: function ref(_ref2) {
                 return refCallbacks.forEach(function (cb) {
                   return cb(_ref2);

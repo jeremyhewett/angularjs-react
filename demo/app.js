@@ -1,5 +1,5 @@
 import angular from "angular";
-import directify from "../dist/angularjs-react.umd";
+import directify from "../src/angularjsReact";
 import {Button} from "react-toolbox/lib/button";
 import React from "react";
 import ReactDOM from "react-dom";
@@ -13,16 +13,6 @@ const GithubIcon = (
 angular.module("demo", [])
   .directive("reactToolboxButton", directify(Button))
   .directive("githubIcon", directify(() => GithubIcon))
-  .directive("component", () => {
-    return {
-      scope: true,
-      link: ($scope, $elem, $attrs) => {
-        ReactDOM.render((<Button href='http://github.com/javivelasco' target='_blank' raised>
-          <GithubIcon /> Github
-        </Button>), $elem[0]);
-      }
-    };
-  })
   .controller("test", ($scope) => {
     $scope.text = "DEMO";
   });

@@ -99,15 +99,16 @@ class AngularjsReact {
 
   link = (instance) => ($scope, $elem, $attrs) => {
     const elem = $elem[0];
-    let shadowParent, innerText;
+    let shadowParent;
     if (instance.hasChildren) {
+      let content;
       try {
-        let content = this.$compile(instance.innerHtml)($scope);
-        shadowParent = angular.element(elem.cloneNode(false));
-        shadowParent.append(content);
+        content = this.$compile(instance.innerHtml)($scope);
       } catch(e) {
-        innerText = instance.innerHtml;
+        content = angular.element(instance.innerHtml);
       }
+      shadowParent = angular.element(elem.cloneNode(false));
+      shadowParent.append(content);
     }
 
     const props = {};
@@ -125,7 +126,7 @@ class AngularjsReact {
 
     const getChildren = (element) => {
       if ([].slice.call(element[0].attributes).filter(a => a.name === 're-react').length) {
-        const result = element.children().splice(0).map(e => {
+        const result = element.contents().splice(0).map(e => {
           const el = angular.element(e);
           const inputAttrs = [].slice.call(e.attributes)
             .filter(a => a.name.match(INPUT_ATTR_PREFIX_REGEXP));
@@ -147,7 +148,7 @@ class AngularjsReact {
       if (!renderPending) {
         this.$timeout(() => {
           const component = this.component(props);
-          const children = instance.hasChildren ? shadowParent ? getChildren(shadowParent) : innerText : undefined;
+          const children = instance.hasChildren ? getChildren(shadowParent) : undefined;
           ReactDOM.render(React.createElement(
             component.type,
             angular.extend({},
