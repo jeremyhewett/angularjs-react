@@ -76,7 +76,7 @@ const _ = (target) => {
 class AngularjsReact {
 
   constructor(component, $compile, $timeout) {
-    this.acceptsChildren = !!component.propTypes.children;
+    this.acceptsChildren = !component.propTypes || !!component.propTypes.children;
     this.component = React.createFactory(component);
     this.$compile = $compile;
     this.$timeout = $timeout;
@@ -90,19 +90,24 @@ class AngularjsReact {
     instance.hasChildren = this.acceptsChildren && !!element.html().trim();
     if (instance.hasChildren) {
       instance.innerHtml = element.html();
-      element.children().splice(0).forEach((e) => {
+      element.contents().splice(0).forEach((e) => {
         angular.element(e).detach();
       });
     }
     return this.link(instance);
   };
 
-  link = (instance) => (scope, $element, attrs) => {
-    const elem = $element[0];
-    let shadowParent;
+  link = (instance) => ($scope, $elem, $attrs) => {
+    const elem = $elem[0];
+    let shadowParent, innerText;
     if (instance.hasChildren) {
-      shadowParent = angular.element(elem.cloneNode(false));
-      shadowParent.append(this.$compile(instance.innerHtml)(scope));
+      try {
+        let content = this.$compile(instance.innerHtml)($scope);
+        shadowParent = angular.element(elem.cloneNode(false));
+        shadowParent.append(content);
+      } catch(e) {
+        innerText = instance.innerHtml;
+      }
     }
 
     const props = {};
@@ -135,15 +140,16 @@ class AngularjsReact {
           return result.length > 1 ? result : result[0];
         }
       }
-      return React.createElement('outlet', { ref: ref => transclude(ref, element.children()) });
+      return React.createElement('outlet', { ref: ref => transclude(ref, element.contents()) });
     };
 
     const render = () => {
       if (!renderPending) {
         this.$timeout(() => {
           const component = this.component(props);
-          const children = instance.hasChildren ? getChildren(shadowParent) : undefined;
-          ReactDOM.render(React.createElement(component.type,
+          const children = instance.hasChildren ? shadowParent ? getChildren(shadowParent) : innerText : undefined;
+          ReactDOM.render(React.createElement(
+            component.type,
             angular.extend({},
               { ...component.props },
               { ref: ref => refCallbacks.forEach(cb => cb(ref)) }),
@@ -154,11 +160,11 @@ class AngularjsReact {
       }
     };
 
-    const inputAttrs = Object.keys(attrs).filter((key) => key.match(INPUT_PREFIX_REGEXP));
+    const inputAttrs = Object.keys($attrs).filter((key) => key.match(INPUT_PREFIX_REGEXP));
     const inputProps = inputAttrs.map((key) => key.substr(INPUT_PREFIX.length, 1).toLowerCase()
       + key.substr(INPUT_PREFIX.length + 1));
     inputAttrs.forEach((key, i) => {
-      const matchOptions = attrs[key].match(OPTIONS_REGEXP);
+      const matchOptions = $attrs[key].match(OPTIONS_REGEXP);
       if (matchOptions) {
         const rawOptions = {
           value: matchOptions[1],
@@ -171,40 +177,40 @@ class AngularjsReact {
           const locals = {};
           props[inputProps[i]] = collection.map((item) => {
             locals[rawOptions.itemName] = item;
-            const value = scope.$eval(rawOptions.value, locals);
+            const value = $scope.$eval(rawOptions.value, locals);
             return _(rawOptions.as).isNil() ? value :
-              { value, label: scope.$eval(rawOptions.as, locals) };
+              { value, label: $scope.$eval(rawOptions.as, locals) };
           });
           render();
         };
-        scope.$watch(rawOptions.collection, onChange, true);
-        scope.$watch(rawOptions.collection, onChange);
+        $scope.$watch(rawOptions.collection, onChange, true);
+        $scope.$watch(rawOptions.collection, onChange);
       } else {
-        scope.$watch(attrs[key], (value) => {
+        $scope.$watch($attrs[key], (value) => {
           props[inputProps[i]] = value;
           render();
         }, true);
-        scope.$watch(attrs[key], (value) => {
+        $scope.$watch($attrs[key], (value) => {
           props[inputProps[i]] = value;
           render();
         });
       }
     });
 
-    const callbackAttrs = Object.keys(attrs).filter((key) => key.match(CALLBACK_PREFIX_REGEXP));
+    const callbackAttrs = Object.keys($attrs).filter((key) => key.match(CALLBACK_PREFIX_REGEXP));
     const callbackProps = callbackAttrs
       .map((key) => key.substr(CALLBACK_PREFIX.length, 1).toLowerCase()
         + key.substr(CALLBACK_PREFIX.length + 1));
     callbackAttrs.forEach((key, i) => {
       props[callbackProps[i]] = (...args) => {
-        this.$timeout(() => scope.$eval(attrs[key], { args }));
+        this.$timeout(() => $scope.$eval($attrs[key], { args }));
       };
     });
 
-    refCallbacks = Object.keys(attrs).filter((key) => key.match(REF_ATTR_REGEXP))
-      .map((key) => (ref) => scope.$eval(attrs[key], { ref }));
+    refCallbacks = Object.keys($attrs).filter((key) => key.match(REF_ATTR_REGEXP))
+      .map((key) => (ref) => $scope.$eval($attrs[key], { ref }));
 
-    scope.$on('$destroy', () => {
+    $scope.$on('$destroy', () => {
       ReactDOM.unmountComponentAtNode(elem);
     });
 
