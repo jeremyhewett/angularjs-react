@@ -11,8 +11,15 @@ const GithubIcon = (
 );
 
 angular.module("demo", [])
+  .directive("demo", () => ({
+    replace: true,
+    templateUrl: "demo/demo.html"
+  }))
   .directive("reactToolboxButton", directify(Button))
   .directive("githubIcon", directify(() => GithubIcon))
-  .controller("test", ($scope) => {
-    $scope.text = "DEMO";
+  .controller("test", ($scope, $timeout) => {
+    $scope.text = "...";
+    $timeout(() => {
+      $scope.text = "DEMO!!";
+    }, 1000);
   });
