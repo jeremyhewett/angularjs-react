@@ -98,8 +98,12 @@ class AngularjsReact {
   };
 
   link = (instance) => ($scope, $elem, $attrs) => {
+    const replace = $attrs.reReplace || $attrs.reReplace === "";
     const elem = $elem[0];
-    let shadowParent;
+    const index = [...elem.parentNode.childNodes].indexOf(elem);
+    const reactParent = replace ? elem.cloneNode(false) : elem;
+
+    let angularParent;
     if (instance.hasChildren) {
       let content;
       try {
@@ -107,8 +111,8 @@ class AngularjsReact {
       } catch(e) {
         content = angular.element(instance.innerHtml);
       }
-      shadowParent = angular.element(elem.cloneNode(false));
-      shadowParent.append(content);
+      angularParent = angular.element(elem.cloneNode(false));
+      angularParent.append(content);
     }
 
     const props = {};
@@ -124,9 +128,9 @@ class AngularjsReact {
       }
     };
 
-    const getChildren = (element) => {
-      if ([].slice.call(element[0].attributes).filter(a => a.name === 're-react').length) {
-        const result = element.contents().splice(0).map(e => {
+    const getChildren = (parent) => {
+      if ([].slice.call(parent[0].attributes).filter(a => a.name === 're-react').length) {
+        const result = parent.contents().splice(0).map(e => {
           const el = angular.element(e);
           const inputAttrs = [].slice.call(e.attributes)
             .filter(a => a.name.match(INPUT_ATTR_PREFIX_REGEXP));
@@ -141,20 +145,25 @@ class AngularjsReact {
           return result.length > 1 ? result : result[0];
         }
       }
-      return React.createElement('outlet', { ref: ref => transclude(ref, element.contents()) });
+      return React.createElement('outlet', { ref: ref => transclude(ref, parent.contents()) });
     };
 
     const render = () => {
       if (!renderPending) {
         this.$timeout(() => {
           const component = this.component(props);
-          const children = instance.hasChildren ? getChildren(shadowParent) : undefined;
+          const children = instance.hasChildren ? getChildren(angularParent) : undefined;
           ReactDOM.render(React.createElement(
             component.type,
             angular.extend({},
               { ...component.props },
-              { ref: ref => refCallbacks.forEach(cb => cb(ref)) }),
-            children), elem);
+              { ref: ref => {
+                if (replace) {
+                  angular.element(elem.parentNode.childNodes[index]).replaceWith(angular.element(reactParent).contents());
+                }
+                refCallbacks.forEach(cb => cb(ref));
+              } }),
+            children), reactParent);
           renderPending = false;
         });
         renderPending = true;
@@ -212,7 +221,7 @@ class AngularjsReact {
       .map((key) => (ref) => $scope.$eval($attrs[key], { ref }));
 
     $scope.$on('$destroy', () => {
-      ReactDOM.unmountComponentAtNode(elem);
+      ReactDOM.unmountComponentAtNode(reactParent);
     });
 
     render();
