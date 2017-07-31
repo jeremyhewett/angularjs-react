@@ -100,6 +100,8 @@ var _angular2 = _interopRequireDefault(_angular);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } } /**
                                                                                                                                                            * AngularJSReact
                                                                                                                                                            *
@@ -197,7 +199,8 @@ var _initialiseProps = function _initialiseProps() {
     instance.hasChildren = _this.acceptsChildren && !!element.html().trim();
     if (instance.hasChildren) {
       instance.innerHtml = element.html();
-      element.contents().splice(0).forEach(function (e) {
+      instance.contents = element.contents();
+      instance.contents.splice(0).forEach(function (e) {
         _angular2.default.element(e).detach();
       });
     }
@@ -206,17 +209,21 @@ var _initialiseProps = function _initialiseProps() {
 
   this.link = function (instance) {
     return function ($scope, $elem, $attrs) {
+      var replace = $attrs.reReplace || $attrs.reReplace === "";
       var elem = $elem[0];
-      var shadowParent = void 0;
+      var index = elem.parentNode && [].concat(_toConsumableArray(elem.parentNode.childNodes)).indexOf(elem);
+      var reactParent = replace ? elem.cloneNode(false) : elem;
+
+      var angularParent = void 0;
       if (instance.hasChildren) {
         var content = void 0;
         try {
           content = _this.$compile(instance.innerHtml)($scope);
         } catch (e) {
-          content = _angular2.default.element(instance.innerHtml);
+          content = instance.contents;
         }
-        shadowParent = _angular2.default.element(elem.cloneNode(false));
-        shadowParent.append(content);
+        angularParent = _angular2.default.element(elem.cloneNode(false));
+        angularParent.append(content);
       }
 
       var props = {};
@@ -232,13 +239,15 @@ var _initialiseProps = function _initialiseProps() {
         }
       };
 
-      var getChildren = function getChildren(element) {
-        if ([].slice.call(element[0].attributes).filter(function (a) {
+      var getChildren = function getChildren(parent) {
+        if ([].slice.call(parent[0].attributes || []).filter(function (a) {
           return a.name === 're-react';
         }).length) {
-          var result = element.contents().splice(0).map(function (e) {
+          var result = parent.contents().splice(0).filter(function (e) {
+            return e.tagName;
+          }).map(function (e) {
             var el = _angular2.default.element(e);
-            var inputAttrs = [].slice.call(e.attributes).filter(function (a) {
+            var inputAttrs = [].slice.call(e.attributes || []).filter(function (a) {
               return a.name.match(INPUT_ATTR_PREFIX_REGEXP);
             });
             var inputProps = _(inputAttrs).keyBy(function (a) {
@@ -254,7 +263,7 @@ var _initialiseProps = function _initialiseProps() {
           }
         }
         return _react2.default.createElement('outlet', { ref: function ref(_ref) {
-            return transclude(_ref, element.contents());
+            return transclude(_ref, parent.contents());
           } });
       };
 
@@ -262,12 +271,15 @@ var _initialiseProps = function _initialiseProps() {
         if (!renderPending) {
           _this.$timeout(function () {
             var component = _this.component(props);
-            var children = instance.hasChildren ? getChildren(shadowParent) : undefined;
+            var children = instance.hasChildren ? getChildren(angularParent) : undefined;
             _reactDom2.default.render(_react2.default.createElement(component.type, _angular2.default.extend({}, _extends({}, component.props), { ref: function ref(_ref2) {
-                return refCallbacks.forEach(function (cb) {
+                if (replace) {
+                  _angular2.default.element(elem.parentNode.childNodes[index]).replaceWith(_angular2.default.element(reactParent).contents());
+                }
+                refCallbacks.forEach(function (cb) {
                   return cb(_ref2);
                 });
-              } }), children), elem);
+              } }), children), reactParent);
             renderPending = false;
           });
           renderPending = true;
@@ -340,7 +352,7 @@ var _initialiseProps = function _initialiseProps() {
       });
 
       $scope.$on('$destroy', function () {
-        _reactDom2.default.unmountComponentAtNode(elem);
+        _reactDom2.default.unmountComponentAtNode(reactParent);
       });
 
       render();

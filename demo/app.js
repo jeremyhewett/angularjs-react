@@ -1,8 +1,9 @@
 import angular from "angular";
-import directify from "../src/angularjsReact";
-import {Button} from "react-toolbox/lib/button";
 import React from "react";
-import ReactDOM from "react-dom";
+import directify from "../src/angularjsReact";
+
+import {Button} from "react-toolbox/lib/button";
+import ReactGridLayout from "react-grid-layout";
 
 const GithubIcon = (
   <svg viewBox="0 0 284 277">
@@ -17,6 +18,7 @@ angular.module("demo", [])
   }))
   .directive("reactToolboxButton", directify(Button))
   .directive("githubIcon", directify(() => GithubIcon))
+  .directive("reactGridLayout", directify(ReactGridLayout))
   .controller("test", ($scope, $timeout) => {
     $scope.text = "...";
     $timeout(() => {

@@ -90,7 +90,8 @@ class AngularjsReact {
     instance.hasChildren = this.acceptsChildren && !!element.html().trim();
     if (instance.hasChildren) {
       instance.innerHtml = element.html();
-      element.contents().splice(0).forEach((e) => {
+      instance.contents = element.contents();
+      instance.contents.splice(0).forEach((e) => {
         angular.element(e).detach();
       });
     }
@@ -100,7 +101,7 @@ class AngularjsReact {
   link = (instance) => ($scope, $elem, $attrs) => {
     const replace = $attrs.reReplace || $attrs.reReplace === "";
     const elem = $elem[0];
-    const index = [...elem.parentNode.childNodes].indexOf(elem);
+    const index = elem.parentNode && [...elem.parentNode.childNodes].indexOf(elem);
     const reactParent = replace ? elem.cloneNode(false) : elem;
 
     let angularParent;
@@ -109,7 +110,7 @@ class AngularjsReact {
       try {
         content = this.$compile(instance.innerHtml)($scope);
       } catch(e) {
-        content = angular.element(instance.innerHtml);
+        content = instance.contents;
       }
       angularParent = angular.element(elem.cloneNode(false));
       angularParent.append(content);
@@ -129,10 +130,12 @@ class AngularjsReact {
     };
 
     const getChildren = (parent) => {
-      if ([].slice.call(parent[0].attributes).filter(a => a.name === 're-react').length) {
-        const result = parent.contents().splice(0).map(e => {
+      if ([].slice.call(parent[0].attributes || []).filter(a => a.name === 're-react').length) {
+        const result = parent.contents().splice(0)
+          .filter(e => e.tagName)
+          .map(e => {
           const el = angular.element(e);
-          const inputAttrs = [].slice.call(e.attributes)
+          const inputAttrs = [].slice.call(e.attributes || [])
             .filter(a => a.name.match(INPUT_ATTR_PREFIX_REGEXP));
           const inputProps = _(inputAttrs)
             .keyBy(a => a.name.substr(INPUT_ATTR_PREFIX.length, 1).toLowerCase()

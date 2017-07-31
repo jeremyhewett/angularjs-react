@@ -3,7 +3,8 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 
 module.exports = {
   entry: {
-    app: "./demo/app.js"
+    app: "./demo/app.js",
+    css: "./demo/app.scss"
   },
   module: {
     rules: [
@@ -14,6 +15,7 @@ module.exports = {
       },
       {
         test: /\.(css|scss)$/,
+        include: /react-toolbox/g,
         use: [
           "style-loader",
           {
@@ -25,6 +27,15 @@ module.exports = {
               localIdentName: "[name]__[local]___[hash:base64:5]"
             }
           },
+          "sass-loader"
+        ],
+      },
+      {
+        test: /\.(css|scss)$/,
+        exclude: /react-toolbox/g,
+        use: [
+          "style-loader",
+          "css-loader",
           "sass-loader"
         ]
       }
