@@ -1,18 +1,24 @@
 <div>
-  <div>
-    <p>React Toolbox Button</p>
-    <react-toolbox-button re-in-raised="true">
+  <div ng-controller="ButtonCtrl">
+    <h2>React Toolbox Button</h2>
+    <react-toolbox-button re-in-href="url" re-in-target="'_blank'" re-in-raised="true">
       <github-icon re-replace></github-icon> {{text}}
     </react-toolbox-button>
     <hr/>
   </div>
 
-  <div>
-    <p>React Grid Layout</p>
-    <react-grid-layout re-in-class-name="'layout'" re-in-cols="4" re-in-rowHeight="30" re-react re-in-width="1200">
-      <div re-in-key="'a'">a</div>
-      <div re-in-key="'b'">b</div>
-      <div re-in-key="'c'">c</div>
+  <div ng-controller="GridCtrl">
+    <h2>React Grid Layout</h2>
+    <button class="btn btn-default" ng-click="addBlock()">Add</button>
+    <react-grid-layout re-in-class-name="'layout'" re-in-layout="layout"
+                       re-in-cols="4" re-in-rowHeight="30" re-react re-in-width="800">
+      <div ng-repeat="block in layout" re-in-key="block.i">
+        <div style="height: 100%; width: 100%; background-image: url({{getImage(block)}}); background-size: 100% 100%;">
+          <button ng-click="removeBlock(block)" type="button" class="close" aria-label="Close" style="float: right;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      </div>
     </react-grid-layout>
     <hr/>
   </div>

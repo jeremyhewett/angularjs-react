@@ -19,9 +19,29 @@ angular.module("demo", [])
   .directive("reactToolboxButton", directify(Button))
   .directive("githubIcon", directify(() => GithubIcon))
   .directive("reactGridLayout", directify(ReactGridLayout))
-  .controller("test", ($scope, $timeout) => {
-    $scope.text = "...";
-    $timeout(() => {
-      $scope.text = "DEMO!!";
-    }, 1000);
+  .controller("ButtonCtrl", ($scope) => {
+    $scope.text = "Code";
+    $scope.url = "https://github.com/jeremyhewett/angularjs-react";
+  })
+  .controller("GridCtrl", ($scope) => {
+    $scope.layout = [
+      { i: '0', x: 0, y: 0, w: 1, h: 1 },
+      { i: '1', x: 1, y: 0, w: 1, h: 1 },
+      { i: '2', x: 2, y: 0, w: 1, h: 1 }
+    ];
+    $scope.$watch('layout', (newLayout) => {
+      console.log(JSON.stringify(newLayout));
+    });
+    $scope.getImage = (block) => [
+      "https://facebook.github.io/react/img/logo.svg",
+      "https://angular.io/assets/images/logos/angular/angular.svg",
+      "https://upload.wikimedia.org/wikipedia/en/thumb/6/69/Ember.js_Logo_and_Mascot.png/170px-Ember.js_Logo_and_Mascot.png",
+    ][parseInt(block.i) % 3];
+    $scope.addBlock = () => {
+      let key = $scope.layout.length ? (parseInt($scope.layout[$scope.layout.length - 1].i) + 1).toString() : 0;
+      $scope.layout.push({ i: key, x: 0, y: 0, w: 1, h: 1 });
+    };
+    $scope.removeBlock = (block) => {
+      $scope.layout.splice($scope.layout.indexOf(block), 1);
+    };
   });
