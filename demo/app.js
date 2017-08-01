@@ -2,7 +2,8 @@ import angular from "angular";
 import React from "react";
 import directify from "../src/angularjsReact";
 
-import {Button} from "react-toolbox/lib/button";
+import { Button } from "react-toolbox/lib/button";
+import { DatePicker } from "react-toolbox/lib/date_picker";
 import ReactGridLayout from "react-grid-layout";
 
 const GithubIcon = (
@@ -17,11 +18,15 @@ angular.module("demo", [])
     templateUrl: "demo/demo.html"
   }))
   .directive("reactToolboxButton", directify(Button))
+  .directive("reactToolboxDatePicker", directify(DatePicker))
   .directive("githubIcon", directify(() => GithubIcon))
   .directive("reactGridLayout", directify(ReactGridLayout))
   .controller("ButtonCtrl", ($scope) => {
     $scope.text = "Code";
     $scope.url = "https://github.com/jeremyhewett/angularjs-react";
+  })
+  .controller("DatePickerCtrl", ($scope) => {
+    $scope.data = {};
   })
   .controller("GridCtrl", ($scope) => {
     $scope.layout = [
@@ -29,9 +34,6 @@ angular.module("demo", [])
       { i: '1', x: 1, y: 0, w: 1, h: 1 },
       { i: '2', x: 2, y: 0, w: 1, h: 1 }
     ];
-    $scope.$watch('layout', (newLayout) => {
-      console.log(JSON.stringify(newLayout));
-    });
     $scope.getImage = (block) => [
       "https://facebook.github.io/react/img/logo.svg",
       "https://angular.io/assets/images/logos/angular/angular.svg",

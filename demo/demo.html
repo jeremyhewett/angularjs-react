@@ -7,6 +7,16 @@
     <hr/>
   </div>
 
+  <div ng-controller="DatePickerCtrl">
+    <h2>React Toolbox Date Picker</h2>
+    <react-toolbox-date-picker re-in-label="'Date of birth'"
+                               re-cb-on-change="data.birthday = args[0]"
+                               re-in-value="data.birthday"
+                               re-in-auto-ok="true"></react-toolbox-date-picker>
+    <span>Birthday saved as: {{data.birthday}}</span>
+    <hr/>
+  </div>
+
   <div ng-controller="GridCtrl">
     <h2>React Grid Layout</h2>
     <button class="btn btn-default" ng-click="addBlock()">Add</button>

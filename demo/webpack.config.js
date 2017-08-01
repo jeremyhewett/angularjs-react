@@ -14,25 +14,24 @@ module.exports = {
         parser: { amd: false }
       },
       {
-        test: /\.(css|scss)$/,
-        include: /react-toolbox/g,
+        test: /\.(css)$/,
+        include: [/react-toolbox/],
         use: [
           "style-loader",
           {
             loader: "css-loader",
             options: {
-              sourceMap: true,
               modules: true,
               importLoaders: 1,
               localIdentName: "[name]__[local]___[hash:base64:5]"
             }
           },
-          "sass-loader"
+          "postcss-loader"
         ],
       },
       {
         test: /\.(css|scss)$/,
-        exclude: /react-toolbox/g,
+        exclude: [/react-toolbox/],
         use: [
           "style-loader",
           "css-loader",
