@@ -5,7 +5,10 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "webpack ./src/angularjsReact.js ./dist/angularjs-react.umd.js --bail",
-    "start": "webpack-dev-server --config ./demo/webpack.config.js"
+    "start": "webpack-dev-server --config ./demo/webpack.config.js",
+    "test": "protractor",
+    "postinstall": "npm run install:webdriver",
+    "install:webdriver": "webdriver-manager update"
   },
   "repository": {
     "type": "git",
@@ -42,6 +45,7 @@
     "postcss-import": "^9.1.0",
     "postcss-loader": "^1.2.2",
     "postcss-mixins": "^5.4.1",
+    "protractor": "^5.1.2",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-grid-layout": "^0.14.7",

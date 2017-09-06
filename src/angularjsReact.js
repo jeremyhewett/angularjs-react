@@ -151,23 +151,25 @@ class AngularjsReact {
     };
 
     const render = () => {
+      const component = this.component(props);
+      const children = instance.hasChildren ? getChildren(angularParent) : undefined;
+      ReactDOM.render(React.createElement(
+        component.type,
+        angular.extend({},
+          { ...component.props },
+          { ref: ref => {
+            if (replace) {
+              angular.element(elem.parentNode.childNodes[index]).replaceWith(angular.element(reactParent).contents());
+            }
+            refCallbacks.forEach(cb => cb(ref));
+          } }),
+        children), reactParent);
+      renderPending = false;
+    };
+
+    const scheduleRender = () => {
       if (!renderPending) {
-        this.$timeout(() => {
-          const component = this.component(props);
-          const children = instance.hasChildren ? getChildren(angularParent) : undefined;
-          ReactDOM.render(React.createElement(
-            component.type,
-            angular.extend({},
-              { ...component.props },
-              { ref: ref => {
-                if (replace) {
-                  angular.element(elem.parentNode.childNodes[index]).replaceWith(angular.element(reactParent).contents());
-                }
-                refCallbacks.forEach(cb => cb(ref));
-              } }),
-            children), reactParent);
-          renderPending = false;
-        });
+        this.$timeout(render);
         renderPending = true;
       }
     };
@@ -178,11 +180,11 @@ class AngularjsReact {
     inputAttrs.forEach((key, i) => {
       $scope.$watch($attrs[key], (value) => {
         props[inputProps[i]] = value;
-        render();
+        scheduleRender();
       }, true);
       $scope.$watch($attrs[key], (value) => {
         props[inputProps[i]] = value;
-        render();
+        scheduleRender();
       });
     });
 
@@ -203,7 +205,7 @@ class AngularjsReact {
       ReactDOM.unmountComponentAtNode(reactParent);
     });
 
-    render();
+    scheduleRender();
   };
 
 }
