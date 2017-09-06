@@ -46,7 +46,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import angular from 'angular';
 
-const OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?\s+for\s+(?:([$\w][$\w\d]*))\s+in\s+(.*)$/;
 const INPUT_PREFIX = 'reIn';
 const INPUT_PREFIX_REGEXP = new RegExp(`^${INPUT_PREFIX}[A-Z]`);
 const INPUT_ATTR_PREFIX = 're-in-';
@@ -177,37 +176,14 @@ class AngularjsReact {
     const inputProps = inputAttrs.map((key) => key.substr(INPUT_PREFIX.length, 1).toLowerCase()
       + key.substr(INPUT_PREFIX.length + 1));
     inputAttrs.forEach((key, i) => {
-      const matchOptions = $attrs[key].match(OPTIONS_REGEXP);
-      if (matchOptions) {
-        const rawOptions = {
-          value: matchOptions[1],
-          as: matchOptions[2],
-          itemName: matchOptions[3],
-          collection: matchOptions[4],
-        };
-
-        const onChange = (collection) => {
-          const locals = {};
-          props[inputProps[i]] = collection.map((item) => {
-            locals[rawOptions.itemName] = item;
-            const value = $scope.$eval(rawOptions.value, locals);
-            return _(rawOptions.as).isNil() ? value :
-              { value, label: $scope.$eval(rawOptions.as, locals) };
-          });
-          render();
-        };
-        $scope.$watch(rawOptions.collection, onChange, true);
-        $scope.$watch(rawOptions.collection, onChange);
-      } else {
-        $scope.$watch($attrs[key], (value) => {
-          props[inputProps[i]] = value;
-          render();
-        }, true);
-        $scope.$watch($attrs[key], (value) => {
-          props[inputProps[i]] = value;
-          render();
-        });
-      }
+      $scope.$watch($attrs[key], (value) => {
+        props[inputProps[i]] = value;
+        render();
+      }, true);
+      $scope.$watch($attrs[key], (value) => {
+        props[inputProps[i]] = value;
+        render();
+      });
     });
 
     const callbackAttrs = Object.keys($attrs).filter((key) => key.match(CALLBACK_PREFIX_REGEXP));
