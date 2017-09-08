@@ -13,13 +13,13 @@
                                re-cb-on-change="data.birthday = args[0]"
                                re-in-value="data.birthday"
                                re-in-auto-ok="true"></react-toolbox-date-picker>
-    <span>Birthday saved as: {{data.birthday}}</span>
+    <span>Birthday saved as: <span class="saved-date">{{data.birthday | date}}</span></span>
     <hr/>
   </div>
 
   <div ng-controller="GridCtrl">
     <h2>React Grid Layout</h2>
-    <button class="btn btn-default" ng-click="addBlock()">Add</button>
+    <button class="btn btn-default add-grid-item" ng-click="addBlock()">Add</button>
     <react-grid-layout re-in-class-name="'layout'" re-in-layout="layout"
                        re-in-cols="4" re-in-rowHeight="30" re-react re-in-width="800">
       <div ng-repeat="block in layout" re-in-key="block.i">

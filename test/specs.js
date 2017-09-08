@@ -1,16 +1,61 @@
-let page = require("./demo.page");
+let page = require('./demo.page');
 
-describe("React Toolbox Button", () => {
+describe('React Toolbox Button', () => {
 
   beforeEach(() => {
     page.load();
   });
 
-  it("should display transcluded text", () => {
-    expect(page.toolboxButton.getText()).toEqual("CODE");
+  it('should display transcluded text', () => {
+    expect(page.toolboxButton.text).toEqual('CODE');
   });
 
-  it("should contain icon svg", () => {
-    expect(page.toolboxButtonIcon.isDisplayed()).toBeTruthy();
+  it('should contain icon svg', () => {
+    expect(page.toolboxButton.icon.isDisplayed()).toBeTruthy();
   });
+});
+
+describe('React Toolbox Date Picker', () => {
+
+  beforeEach(() => {
+    page.load();
+  });
+
+  it('should display pre-set date', () => {
+    expect(page.datePicker.value).toEqual('1 January 2000');
+    expect(page.datePicker.savedDate).toEqual('Jan 1, 2000');
+  });
+
+  it('should update date when new date selected', () => {
+    page.datePicker.open();
+    page.datePicker.selectDay(2);
+    expect(page.datePicker.value).toEqual('2 January 2000');
+    expect(page.datePicker.savedDate).toEqual('Jan 2, 2000');
+  });
+
+});
+
+describe('React Grid Layout', () => {
+
+  beforeEach(() => {
+    page.load();
+  });
+
+  it('should display the pre-set grid', () => {
+    let backgroundImage = page.gridLayout.getItemContent(0).getCssValue('background-image');
+    expect(backgroundImage).toEqual('url("https://facebook.github.io/react/img/logo.svg")');
+
+    backgroundImage = page.gridLayout.getItemContent(1).getCssValue('background-image');
+    expect(backgroundImage).toEqual('url("https://angular.io/assets/images/logos/angular/angular.svg")');
+
+    backgroundImage = page.gridLayout.getItemContent(2).getCssValue('background-image');
+    expect(backgroundImage).toEqual('url("https://upload.wikimedia.org/wikipedia/en/thumb/6/69/Ember.js_Logo_and_Mascot.png/170px-Ember.js_Logo_and_Mascot.png")');
+  });
+
+  it('should add a new grid item', () => {
+    page.gridLayout.add();
+    let backgroundImage = page.gridLayout.getItemContent(3).getCssValue('background-image');
+    expect(backgroundImage).toEqual('url("https://facebook.github.io/react/img/logo.svg")');
+  });
+
 });
