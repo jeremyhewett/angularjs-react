@@ -1,48 +1,48 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
+const path = require('path');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
   entry: {
-    app: "./demo/app.js",
-    css: "./demo/app.scss"
+    app: './demo/app.js',
+    css: './demo/app.scss'
   },
   module: {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        use: ["ng-annotate-loader", "babel-loader"],
+        use: ['ng-annotate-loader', 'babel-loader'],
         parser: { amd: false }
       },
       {
         test: /\.(css)$/,
         include: [/react-toolbox/],
         use: [
-          "style-loader",
+          'style-loader',
           {
-            loader: "css-loader",
+            loader: 'css-loader',
             options: {
               modules: true,
               importLoaders: 1,
-              localIdentName: "[name]__[local]___[hash:base64:5]"
+              localIdentName: '[name]__[local]___[hash:base64:5]'
             }
           },
-          "postcss-loader"
+          'postcss-loader'
         ],
       },
       {
         test: /\.(css|scss)$/,
         exclude: [/react-toolbox/],
         use: [
-          "style-loader",
-          "css-loader",
-          "sass-loader"
+          'style-loader',
+          'css-loader',
+          'sass-loader'
         ]
       }
     ],
   },
-  devtool: "inline-source-map",
+  devtool: 'inline-source-map',
   devServer: {
-    contentBase: "./"
+    contentBase: './'
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -52,6 +52,6 @@ module.exports = {
     })
   ],
   output: {
-    filename: "[name].bundle.js",
+    filename: '[name].bundle.js',
   }
 };
