@@ -2,7 +2,7 @@ import angular from 'angular';
 import React from 'react';
 import directify from '../src/angularjsReact';
 
-import { Button } from 'react-toolbox/lib/button';
+import { Button, IconButton } from 'react-toolbox/lib/button';
 import { DatePicker } from 'react-toolbox/lib/date_picker';
 import ReactGridLayout from 'react-grid-layout';
 
@@ -18,6 +18,7 @@ angular.module('demo', [])
     templateUrl: 'demo/demo.html'
   }))
   .directive('reactToolboxButton', directify(Button))
+  .directive('reactToolboxIconButton', directify(IconButton))
   .directive('reactToolboxDatePicker', directify(DatePicker))
   .directive('githubIcon', directify(() => GithubIcon))
   .directive('reactGridLayout', directify(ReactGridLayout))
