@@ -46,6 +46,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import angular from 'angular';
 
+import _ from './lodashReplacement';
+
 const INPUT_PREFIX = 'reIn';
 const INPUT_PREFIX_REGEXP = new RegExp(`^${INPUT_PREFIX}[A-Z]`);
 const INPUT_ATTR_PREFIX = 're-in-';
@@ -54,23 +56,6 @@ const CALLBACK_PREFIX = 'reCb';
 const CALLBACK_PREFIX_REGEXP = new RegExp(`^${CALLBACK_PREFIX}[A-Z]`);
 const REF_ATTR = 'reRef';
 const REF_ATTR_REGEXP = new RegExp(`^${REF_ATTR}$`);
-
-const _ = (target) => {
-  let accumulator = target;
-  const api = {
-    keyBy: (fn) => {
-      const result = {};
-      accumulator.forEach((value, i) => {
-        result[fn(value, i)] = value;
-      });
-      accumulator = result;
-      return api;
-    },
-    isNil: () => typeof accumulator === 'undefined' || accumulator === null,
-    value: () => accumulator,
-  };
-  return api;
-};
 
 class AngularjsReact {
 
@@ -85,31 +70,31 @@ class AngularjsReact {
   scope = true;
 
   compile = (element) => {
-    const instance = {};
-    instance.hasChildren = this.acceptsChildren && !!element.html().trim();
-    if (instance.hasChildren) {
-      instance.innerHtml = element.html();
-      instance.contents = element.contents();
-      instance.contents.splice(0).forEach((e) => {
+    const definition = {};
+    definition.hasChildren = this.acceptsChildren && !!element.html().trim();
+    if (definition.hasChildren) {
+      definition.innerHtml = element.html();
+      definition.contents = element.contents();
+      definition.contents.splice(0).forEach((e) => {
         angular.element(e).detach();
       });
     }
-    return this.link(instance);
+    return this.link(definition);
   };
 
-  link = (instance) => ($scope, $elem, $attrs) => {
+  link = (definition) => ($scope, $elem, $attrs) => {
     const replace = $attrs.reReplace || $attrs.reReplace === "";
     const elem = $elem[0];
     const index = elem.parentNode && [...elem.parentNode.childNodes].indexOf(elem);
     const reactParent = replace ? elem.cloneNode(false) : elem;
 
     let angularParent;
-    if (instance.hasChildren) {
+    if (definition.hasChildren) {
       let content;
       try {
-        content = this.$compile(instance.innerHtml)($scope);
+        content = this.$compile(definition.innerHtml)($scope);
       } catch(e) {
-        content = instance.contents;
+        content = definition.contents;
       }
       angularParent = angular.element(elem.cloneNode(false));
       angularParent.append(content);
@@ -152,7 +137,7 @@ class AngularjsReact {
 
     const render = () => {
       const component = this.component(props);
-      const children = instance.hasChildren ? getChildren(angularParent) : undefined;
+      const children = definition.hasChildren ? getChildren(angularParent) : undefined;
       ReactDOM.render(React.createElement(
         component.type,
         angular.extend({},
