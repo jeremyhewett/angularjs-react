@@ -52,6 +52,10 @@ const INPUT_PREFIX = 'reIn';
 const INPUT_PREFIX_REGEXP = new RegExp(`^${INPUT_PREFIX}[A-Z]`);
 const INPUT_ATTR_PREFIX = 're-in-';
 const INPUT_ATTR_PREFIX_REGEXP = new RegExp(`^${INPUT_ATTR_PREFIX}`);
+const IINPUT_PREFIX = 'reIin';
+const IINPUT_PREFIX_REGEXP = new RegExp(`^${IINPUT_PREFIX}[A-Z]`);
+const IINPUT_ATTR_PREFIX = 're-iin-';
+const IINPUT_ATTR_PREFIX_REGEXP = new RegExp(`^${IINPUT_ATTR_PREFIX}`);
 const CALLBACK_PREFIX = 'reCb';
 const CALLBACK_PREFIX_REGEXP = new RegExp(`^${CALLBACK_PREFIX}[A-Z]`);
 const REF_ATTR = 'reRef';
@@ -195,6 +199,17 @@ class Instance {
       }, true);
       this.$scope.$watch(this.$attrs[key], (value) => {
         this.props[inputProps[i]] = value;
+        this.scheduleRender();
+      });
+    });
+
+    //Immutable inputs
+    let iinputAttrs = Object.keys(this.$attrs).filter((key) => key.match(IINPUT_PREFIX_REGEXP));
+    let iinputProps = iinputAttrs.map((key) => key.substr(IINPUT_PREFIX.length, 1).toLowerCase()
+      + key.substr(IINPUT_PREFIX.length + 1));
+    iinputAttrs.forEach((key, i) => {
+      this.$scope.$watch(this.$attrs[key], (value) => {
+        this.props[iinputProps[i]] = value;
         this.scheduleRender();
       });
     });
