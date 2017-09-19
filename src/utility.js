@@ -15,4 +15,6 @@ const _ = (target) => {
   return api;
 };
 
-export default _;
+const toCamelCase = (attribute) => attribute.replace(/-([a-zA-Z])/g, function (g) { return g[1].toUpperCase(); });
+
+export { _, toCamelCase };

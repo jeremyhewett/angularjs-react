@@ -46,7 +46,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import angular from 'angular';
 
-import _ from './lodashReplacement';
+import { _, toCamelCase } from "./utility";
 
 const INPUT_PREFIX = 'reIn';
 const INPUT_PREFIX_REGEXP = new RegExp(`^${INPUT_PREFIX}[A-Z]`);
@@ -147,15 +147,15 @@ class Instance {
       const result = parent.contents().splice(0)
         .filter(e => e.tagName)
         .map(e => {
-          const el = angular.element(e);
-          const inputAttrs = [].slice.call(e.attributes || [])
+          const $elem = angular.element(e);
+          let inputAttrs = [].slice.call(e.attributes || [])
             .filter(a => a.name.match(INPUT_ATTR_PREFIX_REGEXP));
-          const inputProps = _(inputAttrs)
+          let inputProps = _(inputAttrs)
             .keyBy(a => a.name.substr(INPUT_ATTR_PREFIX.length, 1).toLowerCase()
-              + a.name.substr(INPUT_ATTR_PREFIX.length + 1)).value();
+              + toCamelCase(a.name.substr(INPUT_ATTR_PREFIX.length + 1))).value();
           Object.keys(inputProps)
-            .forEach(prop => { inputProps[prop] = el.scope().$eval(inputProps[prop].value); });
-          return React.createElement(e.tagName, inputProps, this.getChildren(el));
+            .forEach(prop => { inputProps[prop] = $elem.scope().$eval(inputProps[prop].value); });
+          return React.createElement(e.tagName, inputProps, this.getChildren($elem));
         });
       if (result.length > 0) {
         return result.length > 1 ? result : result[0];
@@ -222,7 +222,7 @@ class Instance {
         + key.substr(CALLBACK_PREFIX.length + 1));
     callbackAttrs.forEach((key, i) => {
       this.props[callbackProps[i]] = (...args) => {
-        this.$timeout(() => this.$scope.$eval(this.$attrs[key], { args }));
+        this.$timeout(() => this.$scope.$eval(this.$attrs[key], { arg: args[0], args }));
       };
     });
   };
