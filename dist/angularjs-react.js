@@ -98,6 +98,8 @@ var _angular = __webpack_require__(3);
 
 var _angular2 = _interopRequireDefault(_angular);
 
+var _utility = __webpack_require__(4);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
@@ -146,41 +148,46 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
                                                                                                                                                            * </my-component>
                                                                                                                                                            */
 
-var OPTIONS_REGEXP = /^\s*(.*?)(?:\s+as\s+(.*?))?\s+for\s+(?:([$\w][$\w\d]*))\s+in\s+(.*)$/;
 var INPUT_PREFIX = 'reIn';
 var INPUT_PREFIX_REGEXP = new RegExp('^' + INPUT_PREFIX + '[A-Z]');
 var INPUT_ATTR_PREFIX = 're-in-';
 var INPUT_ATTR_PREFIX_REGEXP = new RegExp('^' + INPUT_ATTR_PREFIX);
+var IINPUT_PREFIX = 'reIin';
+var IINPUT_PREFIX_REGEXP = new RegExp('^' + IINPUT_PREFIX + '[A-Z]');
+var IINPUT_ATTR_PREFIX = 're-iin-';
+var IINPUT_ATTR_PREFIX_REGEXP = new RegExp('^' + IINPUT_ATTR_PREFIX);
 var CALLBACK_PREFIX = 'reCb';
 var CALLBACK_PREFIX_REGEXP = new RegExp('^' + CALLBACK_PREFIX + '[A-Z]');
 var REF_ATTR = 'reRef';
 var REF_ATTR_REGEXP = new RegExp('^' + REF_ATTR + '$');
 
-var _ = function _(target) {
-  var accumulator = target;
-  var api = {
-    keyBy: function keyBy(fn) {
-      var result = {};
-      accumulator.forEach(function (value, i) {
-        result[fn(value, i)] = value;
-      });
-      accumulator = result;
-      return api;
-    },
-    isNil: function isNil() {
-      return typeof accumulator === 'undefined' || accumulator === null;
-    },
-    value: function value() {
-      return accumulator;
-    }
-  };
-  return api;
-};
-
 var AngularjsReact = function AngularjsReact(component, $compile, $timeout) {
+  var _this = this;
+
   _classCallCheck(this, AngularjsReact);
 
-  _initialiseProps.call(this);
+  this.restrict = 'E';
+  this.scope = true;
+
+  this.compile = function (element) {
+    var markup = {};
+    markup.hasChildren = _this.acceptsChildren && !!element.html().trim();
+    if (markup.hasChildren) {
+      markup.innerHtml = element.html();
+      markup.contents = element.contents();
+      markup.contents.splice(0).forEach(function (e) {
+        _angular2.default.element(e).detach();
+      });
+    }
+    return _this.getLinker(markup);
+  };
+
+  this.getLinker = function (markup) {
+    return function ($scope, $elem, $attrs) {
+      var instance = new Instance(_this, markup);
+      instance.link($scope, $elem, $attrs);
+    };
+  };
 
   this.acceptsChildren = !component.propTypes || !!component.propTypes.children;
   this.component = _react2.default.createFactory(component);
@@ -188,176 +195,167 @@ var AngularjsReact = function AngularjsReact(component, $compile, $timeout) {
   this.$timeout = $timeout;
 };
 
-var _initialiseProps = function _initialiseProps() {
-  var _this = this;
+var Instance = function Instance(Directive, markup) {
+  var _this2 = this;
 
-  this.restrict = 'E';
-  this.scope = true;
+  _classCallCheck(this, Instance);
 
-  this.compile = function (element) {
-    var instance = {};
-    instance.hasChildren = _this.acceptsChildren && !!element.html().trim();
-    if (instance.hasChildren) {
-      instance.innerHtml = element.html();
-      instance.contents = element.contents();
-      instance.contents.splice(0).forEach(function (e) {
-        _angular2.default.element(e).detach();
-      });
-    }
-    return _this.link(instance);
-  };
+  this.link = function ($scope, $elem, $attrs) {
+    _this2.$scope = $scope;
+    _this2.elem = $elem[0];
+    _this2.$attrs = $attrs;
 
-  this.link = function (instance) {
-    return function ($scope, $elem, $attrs) {
-      var replace = $attrs.reReplace || $attrs.reReplace === "";
-      var elem = $elem[0];
-      var index = elem.parentNode && [].concat(_toConsumableArray(elem.parentNode.childNodes)).indexOf(elem);
-      var reactParent = replace ? elem.cloneNode(false) : elem;
+    _this2.replace = _this2.$attrs.reReplace || _this2.$attrs.reReplace === "";
+    _this2.nodeIndex = _this2.elem.parentNode && [].concat(_toConsumableArray(_this2.elem.parentNode.childNodes)).indexOf(_this2.elem);
+    _this2.reactParent = _this2.replace ? _this2.elem.cloneNode(false) : _this2.elem;
 
-      var angularParent = void 0;
-      if (instance.hasChildren) {
-        var content = void 0;
-        try {
-          content = _this.$compile(instance.innerHtml)($scope);
-        } catch (e) {
-          content = instance.contents;
-        }
-        angularParent = _angular2.default.element(elem.cloneNode(false));
-        angularParent.append(content);
+    if (_this2.markup.hasChildren) {
+      var content = void 0;
+      try {
+        content = _this2.$compile(_this2.markup.innerHtml)(_this2.$scope);
+      } catch (e) {
+        content = _this2.markup.contents;
       }
+      _this2.angularParent = _angular2.default.element(_this2.elem.cloneNode(false));
+      _this2.angularParent.append(content);
+    }
 
-      var props = {};
-      var refCallbacks = void 0;
-      var renderPending = false;
+    _this2.setupInputs();
+    _this2.setupCallbacks();
+    _this2.setupRefCallbacks();
 
-      var transclude = function transclude(ref, content) {
-        if (renderPending) {
-          /* eslint-disable react/no-find-dom-node */
-          var node = _reactDom2.default.findDOMNode(ref);
-          /* eslint-disable no-undef */
-          _angular2.default.element(node).replaceWith(content);
-        }
-      };
+    _this2.$scope.$on('$destroy', function () {
+      _reactDom2.default.unmountComponentAtNode(_this2.reactParent);
+    });
 
-      var getChildren = function getChildren(parent) {
-        if ([].slice.call(parent[0].attributes || []).filter(function (a) {
-          return a.name === 're-react';
-        }).length) {
-          var result = parent.contents().splice(0).filter(function (e) {
-            return e.tagName;
-          }).map(function (e) {
-            var el = _angular2.default.element(e);
-            var inputAttrs = [].slice.call(e.attributes || []).filter(function (a) {
-              return a.name.match(INPUT_ATTR_PREFIX_REGEXP);
-            });
-            var inputProps = _(inputAttrs).keyBy(function (a) {
-              return a.name.substr(INPUT_ATTR_PREFIX.length, 1).toLowerCase() + a.name.substr(INPUT_ATTR_PREFIX.length + 1);
-            }).value();
-            Object.keys(inputProps).forEach(function (prop) {
-              inputProps[prop] = el.scope().$eval(inputProps[prop].value);
-            });
-            return _react2.default.createElement(e.tagName, inputProps, getChildren(el));
-          });
-          if (result.length > 0) {
-            return result.length > 1 ? result : result[0];
-          }
-        }
-        return _react2.default.createElement('outlet', { ref: function ref(_ref) {
-            return transclude(_ref, parent.contents());
-          } });
-      };
-
-      var render = function render() {
-        if (!renderPending) {
-          _this.$timeout(function () {
-            var component = _this.component(props);
-            var children = instance.hasChildren ? getChildren(angularParent) : undefined;
-            _reactDom2.default.render(_react2.default.createElement(component.type, _angular2.default.extend({}, _extends({}, component.props), { ref: function ref(_ref2) {
-                if (replace) {
-                  _angular2.default.element(elem.parentNode.childNodes[index]).replaceWith(_angular2.default.element(reactParent).contents());
-                }
-                refCallbacks.forEach(function (cb) {
-                  return cb(_ref2);
-                });
-              } }), children), reactParent);
-            renderPending = false;
-          });
-          renderPending = true;
-        }
-      };
-
-      var inputAttrs = Object.keys($attrs).filter(function (key) {
-        return key.match(INPUT_PREFIX_REGEXP);
-      });
-      var inputProps = inputAttrs.map(function (key) {
-        return key.substr(INPUT_PREFIX.length, 1).toLowerCase() + key.substr(INPUT_PREFIX.length + 1);
-      });
-      inputAttrs.forEach(function (key, i) {
-        var matchOptions = $attrs[key].match(OPTIONS_REGEXP);
-        if (matchOptions) {
-          var rawOptions = {
-            value: matchOptions[1],
-            as: matchOptions[2],
-            itemName: matchOptions[3],
-            collection: matchOptions[4]
-          };
-
-          var onChange = function onChange(collection) {
-            var locals = {};
-            props[inputProps[i]] = collection.map(function (item) {
-              locals[rawOptions.itemName] = item;
-              var value = $scope.$eval(rawOptions.value, locals);
-              return _(rawOptions.as).isNil() ? value : { value: value, label: $scope.$eval(rawOptions.as, locals) };
-            });
-            render();
-          };
-          $scope.$watch(rawOptions.collection, onChange, true);
-          $scope.$watch(rawOptions.collection, onChange);
-        } else {
-          $scope.$watch($attrs[key], function (value) {
-            props[inputProps[i]] = value;
-            render();
-          }, true);
-          $scope.$watch($attrs[key], function (value) {
-            props[inputProps[i]] = value;
-            render();
-          });
-        }
-      });
-
-      var callbackAttrs = Object.keys($attrs).filter(function (key) {
-        return key.match(CALLBACK_PREFIX_REGEXP);
-      });
-      var callbackProps = callbackAttrs.map(function (key) {
-        return key.substr(CALLBACK_PREFIX.length, 1).toLowerCase() + key.substr(CALLBACK_PREFIX.length + 1);
-      });
-      callbackAttrs.forEach(function (key, i) {
-        props[callbackProps[i]] = function () {
-          for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-            args[_key] = arguments[_key];
-          }
-
-          _this.$timeout(function () {
-            return $scope.$eval($attrs[key], { args: args });
-          });
-        };
-      });
-
-      refCallbacks = Object.keys($attrs).filter(function (key) {
-        return key.match(REF_ATTR_REGEXP);
-      }).map(function (key) {
-        return function (ref) {
-          return $scope.$eval($attrs[key], { ref: ref });
-        };
-      });
-
-      $scope.$on('$destroy', function () {
-        _reactDom2.default.unmountComponentAtNode(reactParent);
-      });
-
-      render();
-    };
+    _this2.scheduleRender();
   };
+
+  this.transclude = function (ref, content) {
+    if (_this2.renderPending) {
+      var node = _reactDom2.default.findDOMNode(ref);
+      _angular2.default.element(node).replaceWith(content);
+    }
+  };
+
+  this.getChildren = function (parent) {
+    if ([].slice.call(parent[0].attributes || []).filter(function (a) {
+      return a.name === 're-react';
+    }).length) {
+      var result = parent.contents().splice(0).filter(function (e) {
+        return e.tagName;
+      }).map(function (e) {
+        var $elem = _angular2.default.element(e);
+        var inputAttrs = [].slice.call(e.attributes || []).filter(function (a) {
+          return a.name.match(INPUT_ATTR_PREFIX_REGEXP);
+        });
+        var inputProps = (0, _utility._)(inputAttrs).keyBy(function (a) {
+          return a.name.substr(INPUT_ATTR_PREFIX.length, 1).toLowerCase() + (0, _utility.toCamelCase)(a.name.substr(INPUT_ATTR_PREFIX.length + 1));
+        }).value();
+        Object.keys(inputProps).forEach(function (prop) {
+          inputProps[prop] = $elem.scope().$eval(inputProps[prop].value);
+        });
+        return _react2.default.createElement(e.tagName, inputProps, _this2.getChildren($elem));
+      });
+      if (result.length > 0) {
+        return result.length > 1 ? result : result[0];
+      }
+    }
+    return _react2.default.createElement('outlet', { ref: function ref(_ref) {
+        return _this2.transclude(_ref, parent.contents());
+      } });
+  };
+
+  this.render = function () {
+    var component = _this2.component(_this2.props);
+    var children = _this2.markup.hasChildren ? _this2.getChildren(_this2.angularParent) : undefined;
+    _reactDom2.default.render(_react2.default.createElement(component.type, _angular2.default.extend({}, _extends({}, component.props), { ref: function ref(_ref2) {
+        if (_this2.replace) {
+          _angular2.default.element(_this2.elem.parentNode.childNodes[_this2.nodeIndex]).replaceWith(_angular2.default.element(_this2.reactParent).contents());
+        }
+        _this2.refCallbacks.forEach(function (cb) {
+          return cb(_ref2);
+        });
+      } }), children), _this2.reactParent);
+    _this2.renderPending = false;
+  };
+
+  this.scheduleRender = function () {
+    if (!_this2.renderPending) {
+      _this2.$timeout(_this2.render);
+      _this2.renderPending = true;
+    }
+  };
+
+  this.setupInputs = function () {
+    var inputAttrs = Object.keys(_this2.$attrs).filter(function (key) {
+      return key.match(INPUT_PREFIX_REGEXP);
+    });
+    var inputProps = inputAttrs.map(function (key) {
+      return key.substr(INPUT_PREFIX.length, 1).toLowerCase() + key.substr(INPUT_PREFIX.length + 1);
+    });
+    inputAttrs.forEach(function (key, i) {
+      _this2.$scope.$watch(_this2.$attrs[key], function (value) {
+        _this2.props[inputProps[i]] = value;
+        _this2.scheduleRender();
+      }, true);
+      _this2.$scope.$watch(_this2.$attrs[key], function (value) {
+        _this2.props[inputProps[i]] = value;
+        _this2.scheduleRender();
+      });
+    });
+
+    //Immutable inputs
+    var iinputAttrs = Object.keys(_this2.$attrs).filter(function (key) {
+      return key.match(IINPUT_PREFIX_REGEXP);
+    });
+    var iinputProps = iinputAttrs.map(function (key) {
+      return key.substr(IINPUT_PREFIX.length, 1).toLowerCase() + key.substr(IINPUT_PREFIX.length + 1);
+    });
+    iinputAttrs.forEach(function (key, i) {
+      _this2.$scope.$watch(_this2.$attrs[key], function (value) {
+        _this2.props[iinputProps[i]] = value;
+        _this2.scheduleRender();
+      });
+    });
+  };
+
+  this.setupCallbacks = function () {
+    var callbackAttrs = Object.keys(_this2.$attrs).filter(function (key) {
+      return key.match(CALLBACK_PREFIX_REGEXP);
+    });
+    var callbackProps = callbackAttrs.map(function (key) {
+      return key.substr(CALLBACK_PREFIX.length, 1).toLowerCase() + key.substr(CALLBACK_PREFIX.length + 1);
+    });
+    callbackAttrs.forEach(function (key, i) {
+      _this2.props[callbackProps[i]] = function () {
+        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+          args[_key] = arguments[_key];
+        }
+
+        _this2.$timeout(function () {
+          return _this2.$scope.$eval(_this2.$attrs[key], { arg: args[0], args: args });
+        });
+      };
+    });
+  };
+
+  this.setupRefCallbacks = function () {
+    _this2.refCallbacks = Object.keys(_this2.$attrs).filter(function (key) {
+      return key.match(REF_ATTR_REGEXP);
+    }).map(function (key) {
+      return function (ref) {
+        return _this2.$scope.$eval(_this2.$attrs[key], { ref: ref });
+      };
+    });
+  };
+
+  this.component = Directive.component;
+  this.$compile = Directive.$compile;
+  this.$timeout = Directive.$timeout;
+  this.markup = markup;
+  this.renderPending = false;
+  this.props = {};
 };
 
 exports.default = function (component) {
@@ -385,6 +383,46 @@ module.exports = __WEBPACK_EXTERNAL_MODULE_2__;
 /***/ (function(module, exports) {
 
 module.exports = __WEBPACK_EXTERNAL_MODULE_3__;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var _ = function _(target) {
+  var accumulator = target;
+  var api = {
+    keyBy: function keyBy(fn) {
+      var result = {};
+      accumulator.forEach(function (value, i) {
+        result[fn(value, i)] = value;
+      });
+      accumulator = result;
+      return api;
+    },
+    isNil: function isNil() {
+      return typeof accumulator === 'undefined' || accumulator === null;
+    },
+    value: function value() {
+      return accumulator;
+    }
+  };
+  return api;
+};
+
+var toCamelCase = function toCamelCase(attribute) {
+  return attribute.replace(/-([a-zA-Z])/g, function (g) {
+    return g[1].toUpperCase();
+  });
+};
+
+exports._ = _;
+exports.toCamelCase = toCamelCase;
 
 /***/ })
 /******/ ]);
