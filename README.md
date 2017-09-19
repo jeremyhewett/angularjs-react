@@ -1,3 +1,5 @@
+<img alt="" src="https://github.com/jeremyhewett/angularjs-react/raw/master/logo.png" width="150px" />
+
 # angularjs-react
 A library for using React components as AngularJS directives. The main advantage over other similar libraries is that it **supports angular content within react components**.  
 
@@ -8,6 +10,8 @@ Example:
   <span ng-if="showContent">{{controller.content}}</span>
 </my-react-container>
 ```
+
+See it live [here](http://plnkr.co/edit/LuZsTIez2JHYP0L9xuh3?p=preview)  
 
 ## Installation
 `npm install angularjs-react --save`
@@ -43,7 +47,7 @@ NOTE: if the value of the prop is intended to be a string literal, it needs to b
 
 By default a deep watch will be used to observe changes in an input prop. If the input prop can be treated as immutable and only a shallow watch is required, then use the prefix `re-iin-` (for immutable input).
 
-**Callback props**
+**Callback props**  
 Callback props need to be prefixed with `re-cb-` and the attribute is also treated as an angular expression. However in the case of callbacks props, the expression is only evaluated when the callback is called. The arguments that are passed to the callback function are available as `args` which is an array of all the arguments that the callback was called with. `arg` can also be used to reference the first argument.
 
 Example:  
@@ -55,7 +59,8 @@ Example:
 
 **Special Props**
 
-`re-ref`  
+ * `re-ref`
+ 
 This is equivalent to the `ref` prop in React and is used for getting a reference to the component once it has rendered.
 Again, the value of this attribute is treated as an angular expression which is evaluated when React calls the `ref` callback for the component. The reference is available as `ref` in the expression.  
 Example:  
@@ -63,7 +68,8 @@ Example:
 
 Getting a reference to the react component can sometimes be useful. For example, if a `SidePanel` component had an `open` method then the angular app could get a reference to the component and call `.open()` on it to open the side panel.
 
-`re-react`  
+ * `re-react`
+ 
 This changes the way the child elements are handled.
 
 By default, child elements are removed and compiled separately using angular. A "dummy" child component is passed to react instead which is then replaced with the real angular content after rendering.  
@@ -79,7 +85,9 @@ Example:
   </div>
 </react-grid-layout>
 ```
-`re-replace`  
+
+ * `re-replace`
+   
 This is used to have the React component actually replace the directive wrapper element. This should be avoided and is generally only used for inner components.
 Unfortunately some component libraries use css selectors that rely on exact element hierarchies so leaving the directive wrapper element in place breaks the styling.  
 
@@ -89,3 +97,8 @@ Example:
   <github-icon re-replace></github-icon> {{text}}
 </react-toolbox-button>
 ```
+
+## Demo App
+In the `demo` directory is a basic angular app that showcases several different react components from public component libraries.
+
+The demo is live [here](http://plnkr.co/edit/LuZsTIez2JHYP0L9xuh3?p=preview)
