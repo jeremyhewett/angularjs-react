@@ -14,6 +14,10 @@ module.exports = {
         parser: { amd: false }
       },
       {
+        test: /\.html$/,
+        loader: `html-loader`,
+      },
+      {
         test: /\.(css)$/,
         include: [/react-toolbox/],
         use: [
@@ -52,6 +56,7 @@ module.exports = {
     })
   ],
   output: {
+    path: path.resolve(__dirname, 'bundle'),
     filename: '[name].bundle.js',
   }
 };

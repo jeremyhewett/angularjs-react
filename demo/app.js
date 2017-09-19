@@ -13,9 +13,12 @@ const GithubIcon = (
 );
 
 angular.module('demo', [])
+  .run($templateCache => {
+    $templateCache.put('demo.html', require('./demo.html'));
+  })
   .directive('demo', () => ({
     replace: true,
-    templateUrl: 'demo/demo.html'
+    templateUrl: 'demo.html'
   }))
   .directive('reactToolboxButton', directify(Button))
   .directive('reactToolboxIconButton', directify(IconButton))
