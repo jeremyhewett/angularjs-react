@@ -21,7 +21,7 @@ module.exports = {
   module: {
     loaders: [
       {
-        test: /\.js|.jsx$/,
+        test: /\.jsx?$/,
         loaders: ['babel-loader'],
         exclude: /node_modules/,
       },
@@ -32,7 +32,7 @@ module.exports = {
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2)$/,
-        loaders: ['file'],
+        type: 'asset/resource'
       },
     ],
   },
