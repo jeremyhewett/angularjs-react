@@ -2,13 +2,12 @@
   "name": "angularjs-react",
   "version": "1.0.0",
   "description": "A library for using React components as AngularJS directives",
-  "main": "dist/index.js",
+  "main": "dist/angularjs-react.js",
   "scripts": {
     "build": "webpack --bail",
     "build:demo": "webpack --config=./demo/webpack.config.js --bail",
     "start": "webpack serve --config ./demo/webpack.config.js",
     "test": "protractor",
-    "postinstall": "npm run install:webdriver",
     "install:webdriver": "webdriver-manager update",
     "prepublish": "npm run build"
   },
