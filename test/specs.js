@@ -7,7 +7,7 @@ describe('React Toolbox Button', () => {
   });
 
   it('should display transcluded text', () => {
-    expect(page.toolboxButton.text).toEqual('CODE');
+    expect(page.toolboxButton.text).toEqual('Code');
   });
 
   it('should contain icon svg', () => {
@@ -15,21 +15,21 @@ describe('React Toolbox Button', () => {
   });
 });
 
-describe('React Toolbox Date Picker', () => {
+describe('React Date Picker', () => {
 
   beforeEach(() => {
     page.load();
   });
 
   it('should display pre-set date', () => {
-    expect(page.datePicker.value).toEqual('1 January 2000');
+    expect(page.datePicker.value).toEqual('2000-01-01');
     expect(page.datePicker.savedDate).toEqual('Jan 1, 2000');
   });
 
   it('should update date when new date selected', () => {
     page.datePicker.open();
     page.datePicker.selectDay(2);
-    expect(page.datePicker.value).toEqual('2 January 2000');
+    expect(page.datePicker.value).toEqual('2000-01-02');
     expect(page.datePicker.savedDate).toEqual('Jan 2, 2000');
   });
 
@@ -43,7 +43,7 @@ describe('React Grid Layout', () => {
 
   it('should display the pre-set grid', () => {
     let backgroundImage = page.gridLayout.getItemContent(0).getCssValue('background-image');
-    expect(backgroundImage).toEqual('url("https://facebook.github.io/react/img/logo.svg")');
+    expect(backgroundImage).toEqual('url("https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg")');
 
     backgroundImage = page.gridLayout.getItemContent(1).getCssValue('background-image');
     expect(backgroundImage).toEqual('url("https://angular.io/assets/images/logos/angular/angular.svg")');
@@ -55,7 +55,7 @@ describe('React Grid Layout', () => {
   it('should add a new grid item', () => {
     page.gridLayout.add();
     let backgroundImage = page.gridLayout.getItemContent(3).getCssValue('background-image');
-    expect(backgroundImage).toEqual('url("https://facebook.github.io/react/img/logo.svg")');
+    expect(backgroundImage).toEqual('url("https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg")');
   });
 
 });

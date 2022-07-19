@@ -2,6 +2,7 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
   entry: {
     app: './demo/app.js',
     css: './demo/app.scss'
@@ -9,8 +10,8 @@ module.exports = {
   module: {
     rules: [
       {
-        test: /\.(js|jsx)$/,
-        use: ['ng-annotate-loader', 'babel-loader'],
+        test: /\.jsx?$/,
+        use: ['babel-loader'],
         parser: { amd: false }
       },
       {
@@ -18,24 +19,7 @@ module.exports = {
         loader: `html-loader`,
       },
       {
-        test: /\.(css)$/,
-        include: [/react-toolbox/],
-        use: [
-          'style-loader',
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              importLoaders: 1,
-              localIdentName: '[name]__[local]___[hash:base64:5]'
-            }
-          },
-          'postcss-loader'
-        ],
-      },
-      {
-        test: /\.(css|scss)$/,
-        exclude: [/react-toolbox/],
+        test: /\.s?css$/,
         use: [
           'style-loader',
           'css-loader',
@@ -46,7 +30,7 @@ module.exports = {
   },
   devtool: 'inline-source-map',
   devServer: {
-    contentBase: './'
+    static: [path.join(__dirname, '.')]
   },
   plugins: [
     new HtmlWebpackPlugin({

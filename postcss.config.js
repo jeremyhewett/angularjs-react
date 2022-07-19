@@ -1,10 +1,3 @@
 module.exports = {
-  plugins: {
-    'postcss-import': {
-      root: __dirname,
-    },
-    'postcss-mixins': {},
-    'postcss-each': {},
-    'postcss-cssnext': {}
-  },
+  plugins: ["postcss-preset-env"],
 };

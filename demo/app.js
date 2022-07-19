@@ -1,10 +1,9 @@
 import angular from 'angular';
 import React from 'react';
+import moment from 'moment';
 import directify from '../src/angularjsReact';
 
-import { Button, IconButton } from 'react-toolbox/lib/button';
-import { DatePicker } from 'react-toolbox/lib/date_picker';
-import ReactGridLayout from 'react-grid-layout';
+import { Button, DatePicker, Row } from 'antd';
 
 const GithubIcon = (
   <svg viewBox='0 0 284 277'>
@@ -12,26 +11,35 @@ const GithubIcon = (
   </svg>
 );
 
+function ReactContainer({data, children}) {
+  return <div className="react-container">{data}{children}</div>
+}
+
 angular.module('demo', [])
-  .run($templateCache => {
-    $templateCache.put('demo.html', require('./demo.html'));
-  })
   .directive('demo', () => ({
-    replace: true,
     templateUrl: 'demo.html'
   }))
-  .directive('reactToolboxButton', directify(Button))
-  .directive('reactToolboxIconButton', directify(IconButton))
-  .directive('reactToolboxDatePicker', directify(DatePicker))
+  .directive('reactButton', directify(Button))
+  .directive('reactDatePicker', directify(DatePicker))
   .directive('githubIcon', directify(() => GithubIcon))
-  .directive('reactGridLayout', directify(ReactGridLayout))
+  .directive('reactRow', directify(Row))
+  .directive('reactContainer', directify(ReactContainer))
   .controller('ButtonCtrl', ($scope) => {
     $scope.text = 'Code';
     $scope.url = 'https://github.com/jeremyhewett/angularjs-react';
+    $scope.showDetails = false;
+
+    $scope.toggleDetails = function () {
+      $scope.showDetails = !$scope.showDetails;
+    };
   })
   .controller('DatePickerCtrl', ($scope) => {
     $scope.data = {
-      birthday: new Date(2000, 0, 1)
+      birthday: moment(new Date(2000, 0, 1))
+    };
+
+    $scope.updateDate = function (newDate) {
+      $scope.data.birthday = newDate;
     };
   })
   .controller('GridCtrl', ($scope) => {
@@ -41,7 +49,7 @@ angular.module('demo', [])
       { i: '2', x: 2, y: 0, w: 1, h: 1 }
     ];
     $scope.getImage = (block) => [
-      'https://facebook.github.io/react/img/logo.svg',
+      'https://upload.wikimedia.org/wikipedia/commons/a/a7/React-icon.svg',
       'https://angular.io/assets/images/logos/angular/angular.svg',
       'https://upload.wikimedia.org/wikipedia/en/thumb/6/69/Ember.js_Logo_and_Mascot.png/170px-Ember.js_Logo_and_Mascot.png',
     ][parseInt(block.i) % 3];

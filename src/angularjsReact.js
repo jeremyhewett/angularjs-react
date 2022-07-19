@@ -138,6 +138,7 @@ class Instance {
   transclude = (ref, content) => {
     if (this.renderPending) {
       const node = ReactDOM.findDOMNode(ref);
+      // replace children container with the proper content (removes the placeholder div created by getChildren)
       angular.element(node).replaceWith(content);
     }
   };
@@ -151,17 +152,17 @@ class Instance {
           let inputAttrs = [].slice.call(e.attributes || [])
             .filter(a => a.name.match(INPUT_ATTR_PREFIX_REGEXP));
           let inputProps = _(inputAttrs)
-            .keyBy(a => a.name.substr(INPUT_ATTR_PREFIX.length, 1).toLowerCase()
-              + toCamelCase(a.name.substr(INPUT_ATTR_PREFIX.length + 1))).value();
+            .keyBy(a => a.name.substring(INPUT_ATTR_PREFIX.length, INPUT_ATTR_PREFIX.length + 1).toLowerCase()
+              + toCamelCase(a.name.substring(INPUT_ATTR_PREFIX.length + 1))).value();
           Object.keys(inputProps)
             .forEach(prop => { inputProps[prop] = $elem.scope().$eval(inputProps[prop].value); });
-          return React.createElement(e.tagName, inputProps, this.getChildren($elem));
+          return React.createElement(e.tagName.toLowerCase(), inputProps, this.getChildren($elem));
         });
       if (result.length > 0) {
         return result.length > 1 ? result : result[0];
       }
     }
-    return React.createElement('outlet', { ref: ref => this.transclude(ref, parent.contents()) });
+    return React.createElement('div', { ref: ref => this.transclude(ref, parent.contents()) });
   };
 
   render = () => {
@@ -173,6 +174,7 @@ class Instance {
         { ...component.props },
         { ref: ref => {
           if (this.replace) {
+            // FIXME: when trying to interact with replaced components (e.g. removing them), this breaks because `reactParent` is no longer attached to the DOM
             angular.element(this.elem.parentNode.childNodes[this.nodeIndex]).replaceWith(angular.element(this.reactParent).contents());
           }
           this.refCallbacks.forEach(cb => cb(ref));
@@ -190,8 +192,8 @@ class Instance {
 
   setupInputs = () => {
     let inputAttrs = Object.keys(this.$attrs).filter((key) => key.match(INPUT_PREFIX_REGEXP));
-    let inputProps = inputAttrs.map((key) => key.substr(INPUT_PREFIX.length, 1).toLowerCase()
-      + key.substr(INPUT_PREFIX.length + 1));
+    let inputProps = inputAttrs.map((key) => key.substring(INPUT_PREFIX.length, INPUT_PREFIX.length + 1).toLowerCase()
+      + key.substring(INPUT_PREFIX.length + 1));
     inputAttrs.forEach((key, i) => {
       this.$scope.$watch(this.$attrs[key], (value) => {
         this.props[inputProps[i]] = value;
@@ -205,8 +207,8 @@ class Instance {
 
     //Immutable inputs
     let iinputAttrs = Object.keys(this.$attrs).filter((key) => key.match(IINPUT_PREFIX_REGEXP));
-    let iinputProps = iinputAttrs.map((key) => key.substr(IINPUT_PREFIX.length, 1).toLowerCase()
-      + key.substr(IINPUT_PREFIX.length + 1));
+    let iinputProps = iinputAttrs.map((key) => key.substring(IINPUT_PREFIX.length, IINPUT_PREFIX.length + 1).toLowerCase()
+      + key.substring(IINPUT_PREFIX.length + 1));
     iinputAttrs.forEach((key, i) => {
       this.$scope.$watch(this.$attrs[key], (value) => {
         this.props[iinputProps[i]] = value;
@@ -218,8 +220,8 @@ class Instance {
   setupCallbacks = () => {
     let callbackAttrs = Object.keys(this.$attrs).filter((key) => key.match(CALLBACK_PREFIX_REGEXP));
     let callbackProps = callbackAttrs
-      .map((key) => key.substr(CALLBACK_PREFIX.length, 1).toLowerCase()
-        + key.substr(CALLBACK_PREFIX.length + 1));
+      .map((key) => key.substring(CALLBACK_PREFIX.length, CALLBACK_PREFIX.length + 1).toLowerCase()
+        + key.substring(CALLBACK_PREFIX.length + 1));
     callbackAttrs.forEach((key, i) => {
       this.props[callbackProps[i]] = (...args) => {
         this.$timeout(() => this.$scope.$eval(this.$attrs[key], { arg: args[0], args }));

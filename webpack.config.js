@@ -1,12 +1,17 @@
 const path = require('path');
 
 module.exports = {
+  mode: 'production',
   resolve: {
     extensions: ['.js', '.jsx'],
   },
+  entry: './src/angularjsReact.js',
   output: {
-    library: 'directify',
-    libraryTarget: 'umd',
+    filename: 'angularjs-react.js',
+    library: {
+      type: 'umd',
+      name: 'directify'
+    }
   },
   externals: {
     react: 'react',
@@ -19,21 +24,11 @@ module.exports = {
     angular: 'angular',
   },
   module: {
-    loaders: [
+    rules: [
       {
-        test: /\.js|.jsx$/,
-        loaders: ['babel-loader'],
-        exclude: /node_modules/,
-      },
-      {
-        test: /.scss$/,
-        loaders: ['style', 'css', 'sass'],
-        include: path.resolve(__dirname, '../'),
-      },
-      {
-        test: /\.(eot|svg|ttf|woff|woff2)$/,
-        loaders: ['file'],
-      },
+        test: /\.js$/,
+        use: ['babel-loader']
+      }
     ],
   },
 };
