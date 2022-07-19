@@ -7,7 +7,11 @@ module.exports = {
   },
   entry: './src/angularjsReact.js',
   output: {
-    filename: 'angularjs-react.js'
+    filename: 'angularjs-react.js',
+    library: {
+      type: 'umd',
+      name: 'directify'
+    }
   },
   externals: {
     react: 'react',
