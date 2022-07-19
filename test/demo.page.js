@@ -31,7 +31,7 @@ class DatePicker {
 class GridLayout {
   constructor() {
     this.element = $('react-row > div');
-    this.items = $$(this.element.locator().value + ' > div');
+    this.items = $$(this.element.locator().value + ' .block');
   }
 
   getItemContent(index) { return this.items.get(index); }

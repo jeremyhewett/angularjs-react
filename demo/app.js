@@ -12,7 +12,7 @@ const GithubIcon = (
 );
 
 function ReactContainer({data, children}) {
-  return <div>{data}{children}</div>
+  return <div className="react-container">{data}{children}</div>
 }
 
 angular.module('demo', [])

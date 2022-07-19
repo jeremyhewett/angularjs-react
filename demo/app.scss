@@ -1,1 +1,7 @@
-@import '~antd/dist/antd.css';
+@import "~antd/dist/antd.css";
+
+.block {
+  height: 100px;
+  width: 100px;
+  background-size: 100% 100%;
+}
